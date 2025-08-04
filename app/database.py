@@ -30,6 +30,7 @@ def create_db(db_name="tenders.db"):
         )
         """)
 
+
 # Очистка текста от ненужных символов
 def clean(text):
     if not isinstance(text, str):
@@ -53,4 +54,11 @@ def insert_in_db(item, db_name="tenders.db"):
             clean(item['region']),
             clean(item['price'])
         ))
+        
+# Сохранение данных в ДБ 
+def save_to_db(data, db_name="tenders.db"):
+    create_db(db_name)
+    for item in data:
+        insert_in_db(item, db_name)  
+
 
