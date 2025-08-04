@@ -25,6 +25,7 @@ async def show_table(output: str = "tenders.db"):
     input_path = os.path.join(input_dir, output)
 
     if ext == ".db":
+        # Читаю из БД
         if not os.path.exists(input_path):
             print(f"Файл {input_path} не найден.")
             return
@@ -36,6 +37,7 @@ async def show_table(output: str = "tenders.db"):
             await cursor.close()
 
             if rows:
+                # Обрезаю длинные столбцы
                 truncated_rows = []
                 for row in rows:
                     row = list(row)
@@ -43,6 +45,7 @@ async def show_table(output: str = "tenders.db"):
                     row[5] = truncate(row[5], MAX_ROW_LEN)  # region
                     truncated_rows.append(row)
 
+                # Отображаю таблицу
                 print(tabulate(truncated_rows, headers=columns, tablefmt="grid"))
             else:
                 print("Таблица пустая")
@@ -52,7 +55,7 @@ async def show_table(output: str = "tenders.db"):
             print(f"Файл {input_path} не найден.")
             return
 
-        # чтение CSV остаётся синхронным
+        # Чтение CSV остаётся синхронным
         with open(input_path, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             rows = list(reader)
@@ -63,6 +66,7 @@ async def show_table(output: str = "tenders.db"):
             truncated_rows = []
             for row in rows:
                 row_copy = dict(row)
+            # Обрезаю длинные столбцы
                 row_copy["title"] = truncate(row_copy.get("title"), MAX_ROW_LEN)
                 row_copy["region"] = truncate(row_copy.get("region"), MAX_ROW_LEN)
                 truncated_rows.append(row_copy)
@@ -72,7 +76,7 @@ async def show_table(output: str = "tenders.db"):
     else:
         print("Неизвестный формат файла. Поддерживаются .db и .csv")
 
-# Если хочешь запускать через asyncio.run
 if __name__ == "__main__":
     import sys
     asyncio.run(show_table(sys.argv[1] if len(sys.argv) > 1 else "tenders.db"))
+

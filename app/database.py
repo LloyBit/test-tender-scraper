@@ -2,6 +2,7 @@ import aiosqlite
 import re
 from .schemas import TenderModel
 
+# Создаем таблицу если ее нет
 async def create_db(db_name="tenders.db"):
     async with aiosqlite.connect(db_name) as db:
         await db.execute("""
@@ -17,11 +18,13 @@ async def create_db(db_name="tenders.db"):
         """)
         await db.commit()
 
+# Очистка текста от лишних символов
 def clean(text):
     if not isinstance(text, str):
         return text
     return re.sub(r'\s+', ' ', text).strip()
 
+# Добавление объекта в БД
 async def insert_in_db(item: TenderModel, db_name="tenders.db"):
     async with aiosqlite.connect(db_name) as db:
         await db.execute("""
@@ -38,7 +41,9 @@ async def insert_in_db(item: TenderModel, db_name="tenders.db"):
         ))
         await db.commit()
 
+# Сохранение данных в БД
 async def save_to_db(data: list[TenderModel], db_name="tenders.db"):
     await create_db(db_name)
     for item in data:
         await insert_in_db(item, db_name)
+
