@@ -1,18 +1,20 @@
-from tabulate import tabulate
-import aiosqlite
-import typer
+import asyncio
 import csv
 import os
-import asyncio
+
+import aiosqlite
+import typer
+from tabulate import tabulate
 
 representer_app = typer.Typer()
+MAX_ROW_LEN = 20
 
-MAX_ROW_LEN = 20  # максимально допустимая длина для обрезаемого столбца 
 
-def truncate(text, max_len=MAX_ROW_LEN):
+def _truncate(text: str | None, max_len: int = MAX_ROW_LEN) -> str | None:
+    """Shorten long strings for table display."""
     if not isinstance(text, str):
         return text
-    return text if len(text) <= max_len else text[:max_len-3] + "..."
+    return text if len(text) <= max_len else text[: max_len - 3] + "..."
 
 
 @representer_app.command("show")
@@ -41,8 +43,8 @@ async def show_table(output: str = "tenders.db"):
                 truncated_rows = []
                 for row in rows:
                     row = list(row)
-                    row[3] = truncate(row[3], MAX_ROW_LEN)  # title
-                    row[5] = truncate(row[5], MAX_ROW_LEN)  # region
+                    row[3] = _truncate(row[3], MAX_ROW_LEN)
+                    row[5] = _truncate(row[5], MAX_ROW_LEN)
                     truncated_rows.append(row)
 
                 # Отображаю таблицу
@@ -66,9 +68,8 @@ async def show_table(output: str = "tenders.db"):
             truncated_rows = []
             for row in rows:
                 row_copy = dict(row)
-            # Обрезаю длинные столбцы
-                row_copy["title"] = truncate(row_copy.get("title"), MAX_ROW_LEN)
-                row_copy["region"] = truncate(row_copy.get("region"), MAX_ROW_LEN)
+                row_copy["title"] = _truncate(row_copy.get("title"), MAX_ROW_LEN)
+                row_copy["region"] = _truncate(row_copy.get("region"), MAX_ROW_LEN)
                 truncated_rows.append(row_copy)
 
             print(tabulate(truncated_rows, headers="keys", tablefmt="grid"))

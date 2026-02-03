@@ -23,14 +23,7 @@ def delete(
                         typer.echo(f"Не удалось удалить {file}: {e}")
 
     elif path:
-        # Формируем полный путь к файлу в папке data
-        file_path = BASE_DIR / path
-
-        try:
-            file_path.resolve().relative_to(BASE_DIR.resolve())
-        except ValueError:
-            typer.echo(f"Удаление файлов вне папки {BASE_DIR} запрещено: {file_path}")
-            return
+        file_path = BASE_DIR / path.name
 
         if file_path.exists():
             try:

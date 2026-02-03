@@ -1,14 +1,15 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class TenderModel(BaseModel):
-    number: str = Field(..., description="Номер тендера (уникальный идентификатор)")
-    start_date: Optional[str] = Field(None, description="Дата начала тендера")
-    end_date: Optional[str] = Field(None, description="Дата окончания тендера")
-    title: Optional[str] = Field(None, description="Описание тендера")
-    url: Optional[str] = Field(None, description="Ссылка на тендер")
-    region: Optional[str] = Field(None, description="Регион проведения тендера")
-    price: Optional[str] = Field(None, description="Начальная цена")
+    """Tender record from rostender.info."""
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+    number: str
+    start_date: str | None = None
+    end_date: str | None = None
+    title: str | None = None
+    url: str | None = None
+    region: str | None = None
+    price: str | None = None
