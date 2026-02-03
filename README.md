@@ -1,88 +1,40 @@
 # test-tender-scraper
 
-## Настройка окружения
+Парсинг тендеров с [rostender.info](https://rostender.info/extsearch): сохранение в .db/.csv и API для отдачи JSON.
 
-1) Установите uv в свой глобальный path
+## Установка
 
 ```bash
 pip install uv
+uv sync
 ```
 
-2) Создайте и активируйте venv (uv имеет встроенный)
-
-Для uv:
-
-```bash
-uv venv create
-uv venv activate
-```
-
-3) Установите зависимости
-
-```bash
-uv install
-```
+(venv создаётся и активируется через `uv venv` при необходимости.)
 
 ## Команды
 
-### Создание и наполнение файла .csv/.db
+Все команды через `uv run python -m app.main <команда> ...`.
 
-Пример создания и наполнения файла с именем new_tenders 20-ю тендерами
+| Действие | Пример |
+|----------|--------|
+| Спарсить и сохранить | `uv run python -m app.main extract --max 20 --output new_tenders.db` |
+| Показать данные из файла | `uv run python -m app.main show --output new_tenders.db` |
+| Удалить файл в `data/` | `uv run python -m app.main delete --path new_tenders.db` |
+| Удалить все .db и .csv в `data/` | `uv run python -m app.main delete --all` |
+| Запустить API | `uv run python -m app.main host` |
 
-```bash
-python main.py extract --max 20 --output new_tenders.db
-```
+Файлы создаются в папке `data/`. Поддерживаются форматы `.db` (SQLite) и `.csv`.
 
-### Вывод файла .csv/.db
+## API
 
-Пример вывода всех тендеров из файла new_tenders.db
+После `host` доступен эндпоинт `GET /tenders/?max_items=10` — возвращает JSON со списком тендеров (парсинг на лету, без записи во временные файлы).
 
-```bash
-python main.py show --output new_tenders.db
-```
+Пример клиента: `app/client.py` — запрос к локальному API и вывод JSON.
 
-### Удаление файла .csv/.db или всех таких файлов в директории проекта
+## Структура
 
-Пример удаления csv файла с именем new_tenders.db
-
-```bash
-python main.py delete --path new_tenders.db
-```
-
-Пример удаления всех файлов .csv и .db
-
-```bash
-python main.py delete --all 
-```
-
-### Запуск сервера раздачи json
-
-```bash
-python main.py host 
-```
-
-## Главное
-
-Скрипт парсит сайт [rostender](https://rostender.info/extsearch) и выводит данные в консоль, также можно настроить хостинг апи /tenders
-
-В корне лежит клиент который выводит пример json объекта-тендера
-
-Файлы генерируются через CLI в корневую папку data
-
-## Инструменты
-
-Парсинг: через асинхронный httpx парсил сразу все N/20 страниц (N - число запрашиваемых тендеров) и писал в sqlite3/CSV файл, в зависимости от расширения которое получал из CLI 
-
-CLI: реализовал через новый для себя инструмент typer(до этого работал с Argparse) но благо синтаксис и логика реализации схожа с fastapi
-
-Database-scenario: впервые работаю с sqlite3(раньше использовал только postgreSQL) и довольно компакто и быстро реализовал функционал создания и записи в неё
-
-Routing: Использовал классические инструменты (fastAPI + pydantic-валидатор-ORM)
-
-## To Do
-
-1) Из того что не заявленно в ТЗ я бы добавил фильтрацию и аггрегацию записей которые получаю в CLI.
-
-2) Добавить тесты
-
-3) Проработка асинхронной записи в файл чтобы иметь возможность масштабироваться
+- `app/parser.py` — разбор HTML (RostenderParser).
+- `app/scraper.py` — загрузка страниц и сбор тендеров (RostenderScraper).
+- `app/database.py` — работа с SQLite (таблица tenders).
+- `app/commands/` — CLI: extract, show, delete, host.
+- `app/api/tenders.py` — FastAPI роут `/tenders`.
